@@ -2,14 +2,135 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Collage Maker</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile Collage</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f2f2f2;
+    }
+
+    .container {
+      display: flex;
+      width: 80%;
+      height: 300px;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    /* Collage area (70%) */
+    .collage {
+      flex: 7;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 5px;
+      padding: 5px;
+      background: #ddd;
+    }
+
+    .collage div {
+      background: #bbb;
+      border-radius: 4px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* Profile area (30%) */
+    .profile {
+      flex: 3;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #eee;
+      padding: 10px;
+    }
+
+    .profile img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+
+    .profile h3 {
+      margin: 5px 0;
+      font-size: 16px;
+    }
+
+    .options {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    input[type="file"],
+    select {
+      margin: 5px 0;
+      padding: 5px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
-  <h2>Upload Images for Collage</h2>
-  <input type="file" id="collageUpload" multiple>
-  <div id="collageGrid"></div>
+  <div class="container">
+    <!-- Collage (70%) -->
+    <div class="collage">
+      <div id="slot1"></div>
+      <div id="slot2"></div>
+      <div id="slot3"></div>
+      <div id="slot4"></div>
+    </div>
 
-  <script src="script.js"></script>
+    <!-- Profile (30%) -->
+    <div class="profile">
+      <img src="https://via.placeholder.com/80" alt="Profile Picture">
+      <h3>Your Name</h3>
+
+      <div class="options">
+        <!-- Upload from gallery -->
+        <label>Upload from Gallery</label>
+        <input type="file" accept="image/*" onchange="previewGallery(event)">
+
+        <!-- Upload from site -->
+        <label>Upload from Site</label>
+        <select onchange="chooseSiteImage(this.value)">
+          <option value="">-- Select --</option>
+          <option value="supreme.jpg">Supreme</option>
+          <option value="exquisite.jpg">Exquisite</option>
+          <option value="royal.jpg">Royal</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Upload from gallery
+    function previewGallery(event) {
+      let file = event.target.files[0];
+      if (file) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById("slot1").style.backgroundImage = "url('" + e.target.result + "')";
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Upload from site (preset images)
+    function chooseSiteImage(value) {
+      if (value) {
+        // assuming images are stored in your repo under "images/"
+        document.getElementById("slot2").style.backgroundImage = "url('images/" + value + "')";
+      }
+    }
+  </script>
 </body>
 </html>
