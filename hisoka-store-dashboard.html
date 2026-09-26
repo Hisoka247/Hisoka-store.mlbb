@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My account — Hisoka Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a09; --bg-alt:#131211; --panel:#171614;
+    --fg:#f1efe9; --muted:#94908a; --faint:#5c5952;
+    --line:#2a2825; --line-soft:#201f1c;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:inherit; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--fg); font-family:'Inter',sans-serif; font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit;}
+  .wrap{max-width:960px; margin:0 auto; padding:0 24px;}
+
+  header{position:sticky; top:0; z-index:50; background:rgba(10,10,9,0.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line-soft); padding-top:env(safe-area-inset-top,0px);}
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:18px 24px; max-width:960px; margin:0 auto;}
+  .logo{display:flex; align-items:baseline; gap:8px;}
+  .logo .word{font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:23px;}
+  .logo .sub{font-size:10px; letter-spacing:0.22em; color:var(--muted); border-left:1px solid var(--line); padding-left:8px;}
+  .sign-out{font-size:13.5px; color:var(--muted); cursor:pointer;}
+  .sign-out:hover{color:var(--fg);}
+
+  .head-row{display:flex; align-items:center; gap:16px; padding:44px 0 8px;}
+  .avatar{width:56px; height:56px; border-radius:50%; background:var(--fg); color:var(--bg); display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-size:22px; flex-shrink:0;}
+  .head-row h1{font-family:'Fraunces',serif; font-weight:400; font-size:26px;}
+  .head-row .email{font-size:13.5px; color:var(--muted); margin-top:2px;}
+
+  .stat-strip{display:flex; gap:1px; background:var(--line-soft); border-radius:12px; overflow:hidden; margin:28px 0 40px;}
+  .stat-box{flex:1; background:var(--panel); padding:20px 22px;}
+  .stat-box .n{font-family:'Fraunces',serif; font-size:24px;}
+  .stat-box .l{font-size:12px; color:var(--faint); margin-top:4px;}
+
+  .section-title{font-family:'Fraunces',serif; font-weight:400; font-size:20px; margin-bottom:18px;}
+
+  .order-list{display:flex; flex-direction:column; gap:12px; padding-bottom:70px;}
+  .order{
+    background:var(--panel); border-radius:12px; padding:18px 20px;
+    display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  .order .left{display:flex; flex-direction:column; gap:5px;}
+  .order .tag{font-size:11px; color:var(--muted); letter-spacing:.03em;}
+  .order .title{font-size:15px; font-weight:500;}
+  .order .date{font-size:12.5px; color:var(--faint);}
+  .order .right{display:flex; align-items:center; gap:18px;}
+  .order .price{font-family:'Fraunces',serif; font-size:17px;}
+  .order .warranty-pill{font-size:11px; padding:5px 10px; border-radius:20px; border:1px solid var(--line);}
+  .warranty-pill.active{color:var(--fg); border-color:var(--muted);}
+  .warranty-pill.expired{color:var(--faint);}
+  .order .wa-link{font-size:13px; color:var(--fg); border-bottom:1px solid var(--fg); padding-bottom:1px;}
+
+  .empty{text-align:center; padding:70px 20px; background:var(--panel); border-radius:14px;}
+  .empty .big{font-family:'Fraunces',serif; font-style:italic; font-size:22px; margin-bottom:10px;}
+  .empty p{color:var(--muted); font-size:14px; margin-bottom:22px;}
+  .empty a{display:inline-block; background:var(--fg); color:var(--bg); padding:12px 22px; border-radius:9px; font-weight:600; font-size:14px;}
+
+  .gate{max-width:420px; margin:100px auto; text-align:center; padding:0 20px;}
+  .gate .big{font-family:'Fraunces',serif; font-style:italic; font-size:24px; margin-bottom:12px;}
+  .gate p{color:var(--muted); margin-bottom:22px;}
+  .gate a{display:inline-block; background:var(--fg); color:var(--bg); padding:13px 26px; border-radius:9px; font-weight:600; font-size:14.5px;}
+
+  @media (max-width:640px){
+    .stat-strip{flex-direction:column;}
+    .order{flex-direction:column; align-items:flex-start;}
+    .order .right{width:100%; justify-content:space-between;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <a class="logo" href="index.html"><span class="word">Hisoka</span><span class="sub">STORE</span></a>
+    <span class="sign-out" id="signOut">Sign out</span>
+  </div>
+</header>
+
+<div id="content"></div>
+
+<script>
+const session = JSON.parse(localStorage.getItem("hisoka_session") || "null");
+const content = document.getElementById("content");
+
+if (!session){
+  content.innerHTML = `
+    <div class="gate">
+      <div class="big">Sign in to see your dashboard</div>
+      <p>Your purchase history and account details live here once you're signed in.</p>
+      <a href="hisoka-store-account.html">Sign in</a>
+    </div>`;
+} else {
+  // Mock purchase history — same listing schema the catalog and product pages use,
+  // plus purchaseDate and orderId. A real backend would fetch this per signed-in user.
+  const ORDERS = [
+    { id:"HS-10432", collection:"Mobile Legends", category:"Mega Collectors", title:"Mega Collector bundle, 4 heroes, 60 skins", price:14500, warranty:"14-day warranty", purchaseDate:"2026-08-14", warrantyActive:false },
+    { id:"HS-10387", collection:"Mobile Legends", category:"Exalted or below", title:"Exalted rank, 42 heroes, clean binds", price:2400, warranty:"7-day warranty", purchaseDate:"2026-09-20", warrantyActive:true },
+  ];
+
+  const initial = session.name.trim().charAt(0).toUpperCase() || "H";
+  const totalSpent = ORDERS.reduce((sum, o) => sum + o.price, 0);
+
+  content.innerHTML = `
+    <div class="wrap">
+      <div class="head-row">
+        <div class="avatar">${initial}</div>
+        <div>
+          <h1>${session.name}</h1>
+          <div class="email">${session.email}</div>
+        </div>
+      </div>
+
+      <div class="stat-strip">
+        <div class="stat-box"><div class="n">${ORDERS.length}</div><div class="l">Total orders</div></div>
+        <div class="stat-box"><div class="n">₹${totalSpent.toLocaleString('en-IN')}</div><div class="l">Total spent</div></div>
+        <div class="stat-box"><div class="n">${ORDERS.filter(o => o.warrantyActive).length}</div><div class="l">Active warranties</div></div>
+      </div>
+
+      <div class="section-title">Purchase history</div>
+      <p style="font-size:12.5px; color:var(--faint); margin-top:-10px; margin-bottom:18px;">Orders appear here once we confirm your purchase over WhatsApp.</p>
+      <div class="order-list" id="orderList"></div>
+    </div>`;
+
+  const list = document.getElementById("orderList");
+  if (ORDERS.length === 0){
+    list.innerHTML = `
+      <div class="empty">
+        <div class="big">No purchases yet</div>
+        <p>Once you buy an account, it'll show up here with its warranty status.</p>
+        <a href="hisoka-store-catalog.html">Browse the catalog</a>
+      </div>`;
+  } else {
+    list.innerHTML = ORDERS.map(o => `
+      <div class="order">
+        <div class="left">
+          <span class="tag">${o.collection} · ${o.category} · ${o.id}</span>
+          <span class="title">${o.title}</span>
+          <span class="date">Purchased ${new Date(o.purchaseDate).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}</span>
+        </div>
+        <div class="right">
+          <span class="warranty-pill ${o.warrantyActive ? 'active' : 'expired'}">${o.warrantyActive ? o.warranty + ' · active' : 'Warranty ended'}</span>
+          <span class="price">₹${o.price.toLocaleString('en-IN')}</span>
+          <a class="wa-link" href="https://wa.me/916009021896?text=${encodeURIComponent('Hi, I need help with order ' + o.id + ' (' + o.title + ').')}" target="_blank" rel="noopener">Get help</a>
+        </div>
+      </div>
+    `).join("");
+  }
+}
+
+document.getElementById("signOut").onclick = () => {
+  localStorage.removeItem("hisoka_session");
+  window.location.href = "index.html";
+};
+</script>
+
+</body>
+</html>
