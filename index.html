@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Hisoka Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a09; --bg-alt:#131211; --panel:#171614;
+    --fg:#f1efe9; --muted:#94908a; --faint:#5c5952;
+    --line:#2a2825; --line-soft:#201f1c;
+    --white:#f1efe9;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:inherit; margin:0; padding:0;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px); scroll-behavior:smooth;}
+  body{
+    background:var(--bg); color:var(--fg);
+    font-family:'Inter',sans-serif; font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img{max-width:100%; display:block;}
+  a{color:inherit; text-decoration:none;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 24px;}
+  ::selection{background:var(--fg); color:var(--bg);}
+
+  /* ---- header ---- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(10,10,9,0.85); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+    padding-top:env(safe-area-inset-top,0px);
+  }
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:18px 24px; max-width:1180px; margin:0 auto;}
+  .logo{display:flex; align-items:baseline; gap:8px; line-height:1;}
+  .logo .word{font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:23px; letter-spacing:-0.01em;}
+  .logo .sub{font-size:10px; letter-spacing:0.22em; color:var(--muted); border-left:1px solid var(--line); padding-left:8px;}
+  nav.links{display:flex; gap:34px; font-size:14px; color:var(--muted);}
+  nav.links a{transition:color .2s ease;}
+  nav.links a:hover{color:var(--fg);}
+  .nav-actions{display:flex; align-items:center; gap:18px;}
+  .btn-ghost{font-size:14px; color:var(--muted); transition:color .2s ease;}
+  .btn-ghost:hover{color:var(--fg);}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--fg); color:var(--bg);
+    padding:11px 20px; font-size:14px; font-weight:600;
+    border:1px solid var(--fg); border-radius:2px;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,0,0,.35);}
+  .btn-outline{
+    background:transparent; color:var(--fg); border:1px solid var(--line);
+    padding:10px 19px; font-size:14px;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .btn-outline:hover{border-color:var(--fg); background:rgba(255,255,255,.03);}
+  .menu-toggle{display:none; flex-direction:column; gap:5px; width:22px; cursor:pointer; background:none; border:none;}
+  .menu-toggle span{height:1px; background:var(--fg); width:100%;}
+
+  /* ---- hero ---- */
+  .hero{
+    padding:96px 0 80px; border-bottom:1px solid var(--line-soft);
+    display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px; align-items:center;
+  }
+  .hero-eyebrow{font-size:13px; color:var(--muted); margin-bottom:22px;}
+  .hero h1{
+    font-family:'Fraunces',serif; font-weight:400; font-size:clamp(40px,5.4vw,66px);
+    line-height:1.04; letter-spacing:-0.015em; max-width:11.5ch;
+  }
+  .hero h1 em{font-style:italic; font-weight:500;}
+  .hero p.lede{margin-top:26px; color:var(--muted); max-width:46ch; font-size:16.5px;}
+  .hero-cta{margin-top:38px; display:flex; gap:16px; flex-wrap:wrap;}
+  .hero-stats{display:flex; gap:36px; margin-top:56px;}
+  .stat .n{font-family:'Fraunces',serif; font-size:26px;}
+  .stat .l{font-size:12.5px; color:var(--faint); margin-top:4px;}
+
+  .tier-list{display:flex; flex-direction:column; border:1px solid var(--line); background:linear-gradient(180deg,#151412,#0d0c0b);}
+  .tier{
+    display:grid; grid-template-columns:56px 1fr auto; align-items:center; gap:20px;
+    padding:34px 30px; border-top:1px solid var(--line-soft); position:relative;
+    transition:background .3s ease;
+    opacity:0; transform:translateY(14px);
+    animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards;
+  }
+  .tier:first-child{border-top:none; animation-delay:.12s;}
+  .tier:nth-child(2){animation-delay:.28s;}
+  .tier:nth-child(3){animation-delay:.44s;}
+  .tier::before{content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--fg); transform:scaleY(0); transform-origin:top; transition:transform .35s ease;}
+  .tier:hover{background:rgba(241,239,233,.035);}
+  .tier:hover::before{transform:scaleY(1);}
+  .tier .num{font-family:'Fraunces',serif; font-style:italic; font-size:32px; color:var(--faint); transition:color .3s ease;}
+  .tier:hover .num{color:var(--fg);}
+  .tier .name{font-family:'Fraunces',serif; font-size:24px; letter-spacing:-0.01em; line-height:1.15;}
+  .tier .desc{font-size:13.5px; color:var(--muted); margin-top:7px; max-width:34ch;}
+  .tier .go{font-size:13px; color:var(--muted); white-space:nowrap; border-bottom:1px solid var(--line); padding-bottom:2px; transition:color .25s ease, border-color .25s ease;}
+  .tier:hover .go{color:var(--fg); border-color:var(--fg);}
+  @keyframes rise{to{opacity:1; transform:translateY(0);}}
+
+  /* ---- section shell ---- */
+  section{padding:76px 0; border-bottom:1px solid var(--line-soft);}
+  .section-head{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:40px; gap:20px;}
+  .section-head h2{font-family:'Fraunces',serif; font-weight:400; font-size:clamp(26px,3vw,34px); letter-spacing:-0.01em;}
+  .section-head p{color:var(--muted); font-size:14.5px; max-width:34ch;}
+
+  /* ---- categories ---- */
+  .cat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line-soft); border:1px solid var(--line-soft);}
+  .cat-tile{
+    background:var(--bg); padding:34px 22px; position:relative; min-height:150px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    transition:background .25s ease;
+  }
+  .cat-tile:hover{background:var(--bg-alt);}
+  .cat-tile .name{font-family:'Fraunces',serif; font-style:italic; font-size:20px;}
+  .cat-tile .count{font-size:12.5px; color:var(--faint);}
+  .cat-tile .arrow{align-self:flex-end; font-size:18px; color:var(--muted); transition:transform .25s ease;}
+  .cat-tile:hover .arrow{transform:translate(3px,-3px);}
+
+  /* ---- listings ---- */
+  .grid4{display:grid; grid-template-columns:repeat(4,1fr); gap:22px;}
+  .listing{border:1px solid var(--line); transition:border-color .2s ease;}
+  .listing:hover{border-color:var(--faint);}
+  .listing .thumb{aspect-ratio:4/3; background:linear-gradient(135deg,#1c1a17,#0e0d0c); position:relative; overflow:hidden;}
+  .listing .thumb::after{content:attr(data-tag); position:absolute; top:12px; left:12px; font-size:10.5px; letter-spacing:.06em; color:var(--muted); border:1px solid var(--line); padding:4px 8px; background:rgba(10,10,9,.6);}
+  .listing .body{padding:18px;}
+  .listing .collection{font-size:11.5px; color:var(--muted); margin-bottom:6px;}
+  .listing .title{font-size:15.5px; font-weight:500; margin-bottom:10px; line-height:1.35;}
+  .listing .meta{display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line-soft); padding-top:12px;}
+  .listing .price{font-family:'Fraunces',serif; font-size:18px;}
+  .listing .warranty{font-size:11.5px; color:var(--faint);}
+
+  /* ---- whatsapp cta band ---- */
+  .cta-band{
+    background:var(--panel); border:1px solid var(--line);
+    padding:52px; display:flex; justify-content:space-between; align-items:center; gap:30px;
+  }
+  .cta-band h3{font-family:'Fraunces',serif; font-weight:400; font-size:28px; max-width:16ch;}
+  .cta-band p{color:var(--muted); margin-top:10px; font-size:14.5px;}
+  .wa-btn{
+    display:inline-flex; align-items:center; gap:10px; white-space:nowrap;
+    background:var(--fg); color:var(--bg); padding:14px 24px; font-weight:600; font-size:15px; border-radius:2px;
+    transition:transform .18s ease;
+  }
+  .wa-btn:hover{transform:translateY(-1px);}
+
+  /* ---- why us ---- */
+  .why-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line-soft); border:1px solid var(--line-soft);}
+  .why-item{background:var(--bg); padding:34px;}
+  .why-item .mark{font-family:'Fraunces',serif; font-style:italic; font-size:22px; color:var(--faint); margin-bottom:16px;}
+  .why-item h4{font-size:16px; margin-bottom:10px;}
+  .why-item p{font-size:14px; color:var(--muted); line-height:1.65;}
+
+  /* ---- footer ---- */
+  footer{padding:52px 0 40px;}
+  .foot-top{display:flex; justify-content:space-between; flex-wrap:wrap; gap:32px; padding-bottom:36px; border-bottom:1px solid var(--line-soft);}
+  .foot-links{display:flex; gap:48px; flex-wrap:wrap;}
+  .foot-col h5{font-size:12.5px; color:var(--faint); letter-spacing:.05em; margin-bottom:14px;}
+  .foot-col a{display:block; font-size:14px; color:var(--muted); margin-bottom:9px; transition:color .2s ease;}
+  .foot-col a:hover{color:var(--fg);}
+  .foot-bottom{display:flex; justify-content:space-between; padding-top:24px; font-size:12.5px; color:var(--faint); flex-wrap:wrap; gap:10px;}
+
+  /* ---- floating whatsapp ---- */
+  .wa-float{
+    position:fixed; bottom:24px; right:24px; z-index:60;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    background:var(--fg); color:var(--bg); border-radius:2px;
+    padding:13px 18px; font-size:13.5px; font-weight:600;
+    display:flex; align-items:center; gap:8px;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+    transition:transform .2s ease;
+  }
+  .wa-float:hover{transform:translateY(-2px);}
+
+  @media (max-width:880px){
+    nav.links{display:none;}
+    .menu-toggle{display:flex;}
+    .hero{grid-template-columns:1fr; padding:56px 0 48px;}
+    .tier-list{margin-top:20px;}
+    .tier{grid-template-columns:40px 1fr; padding:24px 20px; gap:14px;}
+    .tier .go{display:none;}
+    .tier .num{font-size:26px;}
+    .tier .name{font-size:21px;}
+    .cat-grid{grid-template-columns:1fr;}
+    .grid4{grid-template-columns:repeat(2,1fr);}
+    .why-grid{grid-template-columns:1fr;}
+    .cta-band{flex-direction:column; align-items:flex-start; padding:34px;}
+    .hero-stats{gap:24px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .tier{animation:none; opacity:1; transform:none;}
+    html{scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="logo"><span class="word">Hisoka</span><span class="sub">STORE</span></div>
+    <nav class="links">
+      <a href="#why">Why Hisoka</a>
+      <a href="hisoka-store-trust.html">FAQ</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn-ghost" href="hisoka-store-account.html">Sign in</a>
+      <a class="btn" href="hisoka-store-catalog.html">Browse listings</a>
+      <button class="menu-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap" style="border-bottom:1px solid var(--line-soft); padding-left:0; padding-right:0;">
+    <div>
+      <div class="hero-eyebrow">Verified Mobile Legends accounts</div>
+      <h1>Own the account. <em>Skip the grind.</em></h1>
+      <p class="lede">Hisoka Store lists hand-checked Mobile Legends accounts — each one verified, warrantied, and handed over directly by a human, not a bot.</p>
+      <div class="hero-cta">
+        <a class="btn" href="hisoka-store-catalog.html">View catalog</a>
+        <a class="btn-outline" href="#contact">Message on WhatsApp</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="n">10,000+</div><div class="l">Gaming IDs sold</div></div>
+        <div class="stat"><div class="n">4.9 / 5</div><div class="l">Buyer rating</div></div>
+      </div>
+    </div>
+    <div class="tier-list">
+      <a class="tier" href="hisoka-store-catalog.html?category=Exalted%20or%20below">
+        <span class="num">I</span>
+        <div><div class="name">Exalted or below</div><div class="desc">Accounts at Exalted rank and below — the accessible way in.</div></div>
+        <span class="go">Browse</span>
+      </a>
+      <a class="tier" href="hisoka-store-catalog.html?category=Mega%20Collectors">
+        <span class="num">II</span>
+        <div><div class="name">Mega Collectors</div><div class="desc">Accounts featuring Mega Collector skins.</div></div>
+        <span class="go">Browse</span>
+      </a>
+      <a class="tier" href="hisoka-store-catalog.html?category=World%2FGalaxy%20Collectors">
+        <span class="num">III</span>
+        <div><div class="name">World / Galaxy Collectors</div><div class="desc">The rarest tier — World and Galaxy Collector accounts.</div></div>
+        <span class="go">Browse</span>
+      </a>
+    </div>
+  </section>
+
+  <section id="why" class="wrap">
+    <div class="section-head">
+      <h2>Why Hisoka Store</h2>
+      <p>The three things buyers ask about most.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-item">
+        <div class="mark">01</div>
+        <h4>Every account is checked by hand</h4>
+        <p>No scraped listings. A team member confirms ownership, stats, and inventory before anything goes live.</p>
+      </div>
+      <div class="why-item">
+        <div class="mark">02</div>
+        <h4>Warranty on every sale</h4>
+        <p>If an account is reclaimed or misrepresented within its warranty window, you get a replacement or a refund.</p>
+      </div>
+      <div class="why-item">
+        <div class="mark">03</div>
+        <h4>A person, not a queue</h4>
+        <p>Handover happens over WhatsApp with someone who can answer questions before and after you buy.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="logo"><span class="word">Hisoka</span><span class="sub">STORE</span></div>
+      <div class="foot-links">
+        <div class="foot-col">
+          <h5>SHOP</h5>
+          <a href="hisoka-store-catalog.html">Browse listings</a>
+          <a href="#">Sell to us</a>
+        </div>
+        <div class="foot-col">
+          <h5>SUPPORT</h5>
+          <a href="hisoka-store-trust.html#faq">FAQ</a>
+          <a href="hisoka-store-trust.html#warranty">Warranty &amp; refunds</a>
+          <a href="https://wa.me/916009021896" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+        <div class="foot-col">
+          <h5>ACCOUNT</h5>
+          <a href="hisoka-store-account.html">Sign in</a>
+          <a href="hisoka-store-dashboard.html">Purchase history</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Hisoka Store. All accounts are handed over directly by our team.</span>
+      <span>Payment: UPI (₹) or Binance ($)</span>
+    </div>
+  </div>
+</footer>
+
+<a class="wa-float" href="https://wa.me/916009021896" target="_blank" rel="noopener">💬 WhatsApp us</a>
+
+</body>
+</html>
