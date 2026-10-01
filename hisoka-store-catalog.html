@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://fiydbqtjmfwkwkowztxq.supabase.co; base-uri 'self'; form-action 'self'; object-src 'none'; frame-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Catalog — Hisoka Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0a0a09; --bg-alt:#131211; --panel:#171614;
+    --fg:#f1efe9; --muted:#94908a; --faint:#5c5952;
+    --line:#2a2825; --line-soft:#201f1c;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:inherit; margin:0; padding:0;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{background:var(--bg); color:var(--fg); font-family:'Inter',sans-serif; font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 24px;}
+
+  header{position:sticky; top:0; z-index:50; background:rgba(10,10,9,0.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line-soft); padding-top:env(safe-area-inset-top,0px);}
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:18px 24px; max-width:1180px; margin:0 auto;}
+  .logo{display:flex; align-items:baseline; gap:8px;}
+  .logo .word{font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:23px;}
+  .logo .sub{font-size:10px; letter-spacing:0.22em; color:var(--muted); border-left:1px solid var(--line); padding-left:8px;}
+  nav.links{display:flex; gap:34px; font-size:14px; color:var(--muted);}
+  nav.links a:hover{color:var(--fg);}
+  .btn-ghost{font-size:14px; color:var(--muted);}
+  .btn-ghost:hover{color:var(--fg);}
+
+  .page-head{padding:52px 0 28px; border-bottom:1px solid var(--line-soft);}
+  .page-head .eyebrow{font-size:13px; color:var(--muted); margin-bottom:14px;}
+  .page-head h1{font-family:'Fraunces',serif; font-weight:400; font-size:clamp(30px,4vw,42px); letter-spacing:-0.01em;}
+  .trust-badge{display:inline-flex; align-items:center; gap:8px; margin-top:18px; font-size:13px; color:var(--muted); border:1px solid var(--line); padding:8px 14px; border-radius:2px;}
+  .trust-badge strong{color:var(--fg); font-weight:600;}
+
+  .layout{display:grid; grid-template-columns:250px 1fr; gap:44px; padding:40px 0 80px;}
+
+  .filters{border-right:1px solid var(--line-soft); padding-right:36px; height:fit-content; position:sticky; top:96px;}
+  .filter-group{margin-bottom:32px;}
+  .filter-group h4{font-size:12px; letter-spacing:.06em; color:var(--faint); margin-bottom:14px;}
+  .search-box input{
+    width:100%; background:var(--panel); border:1px solid var(--line); color:var(--fg);
+    padding:11px 14px; font-family:inherit; font-size:14px; border-radius:2px;
+  }
+  .search-box input:focus{outline:none; border-color:var(--muted);}
+  .search-box input::placeholder{color:var(--faint);}
+  .chip-list{display:flex; flex-direction:column; gap:2px;}
+  .chip{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:9px 10px; font-size:13.5px; color:var(--muted); cursor:pointer;
+    border-radius:2px; transition:background .15s ease, color .15s ease;
+  }
+  .chip:hover{background:var(--bg-alt); color:var(--fg);}
+  .chip.active{background:var(--fg); color:var(--bg);}
+  .chip .n{font-size:12px; opacity:.65;}
+  .clear-btn{margin-top:8px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--line); padding-bottom:2px; display:inline-block; cursor:pointer;}
+  .clear-btn:hover{color:var(--fg); border-color:var(--fg);}
+
+  .filter-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:10px;}
+  .filter-head h4{margin-bottom:0;}
+  .toggle-btn{
+    display:inline-flex; align-items:center; gap:5px;
+    background:var(--panel); border:1px solid var(--line); color:var(--fg);
+    font-size:11.5px; font-weight:600; letter-spacing:.02em;
+    padding:5px 10px; border-radius:2px; cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .toggle-btn:hover{border-color:var(--muted); background:var(--bg-alt);}
+  .toggle-btn .chev{font-size:10px; transition:transform .15s ease;}
+
+  /* ---- scrollable gallery ---- */
+
+  .results-bar{display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; font-size:14px; color:var(--muted); gap:16px; flex-wrap:wrap;}
+  .results-bar select{background:var(--panel); color:var(--fg); border:1px solid var(--line); padding:8px 10px; font-family:inherit; font-size:13.5px; border-radius:2px;}
+
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  .listing{border:1px solid var(--line); transition:border-color .2s ease; display:flex; flex-direction:column;}
+  .listing:hover{border-color:var(--faint);}
+  .listing .thumb{aspect-ratio:4/3; background:linear-gradient(135deg,#1c1a17,#0e0d0c); position:relative; display:flex; align-items:center; justify-content:center;}
+  .listing .thumb img{width:100%; height:100%; object-fit:contain;}
+  .listing .thumb .tag{position:absolute; top:12px; left:12px; font-size:10.5px; letter-spacing:.04em; color:var(--muted); border:1px solid var(--line); padding:4px 8px; background:rgba(10,10,9,.6);}
+  .listing .body{padding:18px; flex:1; display:flex; flex-direction:column;}
+  .listing .collection{font-size:11.5px; color:var(--muted); margin-bottom:6px;}
+  .listing .title{font-size:15.5px; font-weight:500; margin-bottom:10px; line-height:1.35; flex:1;}
+  .listing .meta{display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line-soft); padding-top:12px;}
+  .listing .price{font-family:'Fraunces',serif; font-size:18px;}
+  .listing .warranty{font-size:11.5px; color:var(--faint);}
+
+  .empty{padding:80px 0; text-align:center; color:var(--muted);}
+  .empty .big{font-family:'Fraunces',serif; font-style:italic; font-size:22px; color:var(--fg); margin-bottom:10px;}
+
+  @media (max-width:880px){
+    nav.links{display:none;}
+    .layout{grid-template-columns:1fr; gap:28px;}
+    .filters{border-right:none; border-bottom:1px solid var(--line-soft); padding-right:0; padding-bottom:28px; position:static;}
+    .grid3{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:520px){
+    .grid3{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <a class="logo" href="index.html"><span class="word">Hisoka</span><span class="sub">STORE</span></a>
+    <nav class="links">
+      <a href="index.html#why">Why Hisoka</a>
+      <a href="#" style="color:var(--fg)">Catalog</a>
+      <a href="hisoka-store-trust.html">FAQ</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+    <a class="btn-ghost" href="hisoka-store-account.html">Sign in</a>
+  </div>
+</header>
+
+<div class="page-head wrap">
+  <div class="eyebrow">Mobile Legends</div>
+  <h1>Full catalog</h1>
+  <div class="trust-badge">🏆 <span>Sold Over <strong>10,000</strong> Gaming IDs</span></div>
+</div>
+
+<div class="wrap layout">
+  <aside class="filters">
+    <div class="filter-group">
+      <h4>SEARCH</h4>
+      <div class="search-box">
+        <input id="search" type="text" placeholder="Search listings…">
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-head">
+        <h4>CATEGORY</h4>
+        <button class="toggle-btn" id="toggleCategory"></button>
+      </div>
+      <div class="chip-list" id="chipList"></div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-head">
+        <h4>PRICE RANGE</h4>
+        <button class="toggle-btn" id="toggleBracket"></button>
+      </div>
+      <div class="chip-list" id="bracketList"></div>
+    </div>
+    <a class="clear-btn" id="clearFilters">Clear all filters</a>
+  </aside>
+
+  <div>
+    <div class="results-bar">
+      <span id="resultCount">Loading…</span>
+      <select id="sortSelect">
+        <option value="default">Sort: Featured</option>
+        <option value="price-asc">Price: Low to high</option>
+        <option value="price-desc">Price: High to low</option>
+      </select>
+    </div>
+    <div class="grid3" id="grid"></div>
+    <div class="empty" id="emptyState" style="display:none;">
+      <div class="big">Nothing matches those filters</div>
+      <p>Try a different category or price range.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================= SUPABASE (real, shared, live data) =================
+const SUPABASE_URL = "https://fiydbqtjmfwkwkowztxq.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_3_n9NFA3RROLTQyP5rHTVA_2eqNZvFI";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const WHATSAPP_NUMBER = "916009021896";
+
+// Security: every piece of listing/category data ultimately came from a
+// database write, and while today only the admin account can write, this
+// escapes it anyway before it's ever inserted as HTML — so even a typo'd
+// title containing "<" or a compromised admin session can't inject a
+// script that runs in every visitor's browser (stored XSS).
+function escapeHtml(str){
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+// Only ever treat a value as an image URL if it's actually http(s) — blocks
+// a "javascript:" or "data:" URL from ever reaching a src/style attribute.
+function safeImageUrl(url){
+  if (!url) return null;
+  const trimmed = String(url).trim();
+  if (!/^https?:\/\//i.test(trimmed)) return null;
+  return trimmed.replace(/"/g, "%22").replace(/'/g, "%27");
+}
+
+const BRACKETS = [
+  { label:"₹1k – 5k",    min:1000,   max:5000   },
+  { label:"₹6k – 10k",   min:6000,   max:10000  },
+  { label:"₹11k – 15k",  min:11000,  max:15000  },
+  { label:"₹16k – 25k",  min:16000,  max:25000  },
+  { label:"₹26k – 50k",  min:26000,  max:50000  },
+  { label:"₹51k – 100k", min:51000,  max:100000 },
+  { label:"₹101k – 500k",min:101000, max:500000 },
+];
+function bracketFor(price){
+  if (price < BRACKETS[0].min) return BRACKETS[0].label;
+  for (const b of BRACKETS){ if (price >= b.min && price <= b.max) return b.label; }
+  return BRACKETS[BRACKETS.length - 1].label;
+}
+
+let CATEGORY_NAMES = ["All"];
+let LISTINGS = [];
+const state = { search:"", category:"All", bracket:"All", sort:"default" };
+
+async function loadCategories(){
+  const { data, error } = await sb.from("categories").select("name").order("id");
+  if (!error) CATEGORY_NAMES = ["All", ...data.map(c => c.name)];
+}
+async function loadListings(){
+  const { data, error } = await sb.from("listings").select("*").order("created_at", { ascending:false });
+  if (error){
+    document.getElementById("resultCount").textContent = "Couldn't load listings";
+    return;
+  }
+  LISTINGS = data;
+  render();
+}
+
+function renderChips(){
+  const catList = document.getElementById("chipList");
+  catList.innerHTML = "";
+  CATEGORY_NAMES.forEach(cat => {
+    const count = cat === "All" ? LISTINGS.length : LISTINGS.filter(l => l.category === cat).length;
+    const chip = document.createElement("div");
+    chip.className = "chip" + (state.category === cat ? " active" : "");
+    chip.innerHTML = `<span>${escapeHtml(cat)}</span><span class="n">${count}</span>`;
+    chip.onclick = () => { state.category = cat; render(); };
+    catList.appendChild(chip);
+  });
+
+  const brList = document.getElementById("bracketList");
+  brList.innerHTML = "";
+  const allBracketOpts = ["All", ...BRACKETS.map(b => b.label)];
+  allBracketOpts.forEach(label => {
+    const count = label === "All" ? LISTINGS.length : LISTINGS.filter(l => bracketFor(l.price) === label).length;
+    const chip = document.createElement("div");
+    chip.className = "chip" + (state.bracket === label ? " active" : "");
+    chip.innerHTML = `<span>${label}</span><span class="n">${count}</span>`;
+    chip.onclick = () => { state.bracket = label; render(); };
+    brList.appendChild(chip);
+  });
+}
+
+function applyFilters(){
+  let items = LISTINGS.filter(l => {
+    if (state.category !== "All" && l.category !== state.category) return false;
+    if (state.bracket !== "All" && bracketFor(l.price) !== state.bracket) return false;
+    if (state.search && !l.title.toLowerCase().includes(state.search.toLowerCase())) return false;
+    return true;
+  });
+  if (state.sort === "price-asc") items.sort((a,b) => a.price - b.price);
+  if (state.sort === "price-desc") items.sort((a,b) => b.price - a.price);
+  return items;
+}
+
+let currentFilteredItems = [];
+
+function renderGrid(items){
+  const grid = document.getElementById("grid");
+  const empty = document.getElementById("emptyState");
+  document.getElementById("resultCount").textContent = `${items.length} listing${items.length === 1 ? "" : "s"}`;
+
+  if (items.length === 0){
+    grid.style.display = "none";
+    empty.style.display = "block";
+    return;
+  }
+  grid.style.display = "grid";
+  empty.style.display = "none";
+
+  grid.innerHTML = items.map(l => `
+    <a class="listing" href="hisoka-store-product.html?id=${Number(l.id)}">
+      <div class="thumb">${safeImageUrl(l.image_url) ? `<img src="${safeImageUrl(l.image_url)}" alt="${escapeHtml(l.title)}">` : `<span class="tag">${escapeHtml(l.category)}</span>`}</div>
+      <div class="body">
+        <div class="collection">${escapeHtml(l.collection)} · ${escapeHtml(l.category)}</div>
+        <div class="title">${escapeHtml(l.title)}</div>
+        <div class="meta">
+          <span class="price">₹${Number(l.price).toLocaleString('en-IN')}${l.price_usd ? ` <span style="font-size:12px; color:var(--muted); font-family:'Inter',sans-serif;">· $${Number(l.price_usd).toLocaleString('en-US')}</span>` : ""}</span>
+          <span class="warranty">${escapeHtml(l.warranty)}</span>
+        </div>
+      </div>
+    </a>
+  `).join("");
+}
+
+function render(){
+  renderChips();
+  currentFilteredItems = applyFilters();
+  renderGrid(currentFilteredItems);
+}
+
+// ---- Collapsible "View all / View less" filter sections ----
+function setupToggle(btnId, listId, startOpen){
+  let open = startOpen;
+  const btn = document.getElementById(btnId);
+  const list = document.getElementById(listId);
+  function update(){
+    list.style.display = open ? "flex" : "none";
+    btn.innerHTML = open
+      ? `View all <span class="chev">▴</span>`
+      : `View less <span class="chev">▾</span>`;
+  }
+  btn.onclick = () => { open = !open; update(); };
+  update();
+}
+setupToggle("toggleCategory", "chipList", true);
+setupToggle("toggleBracket", "bracketList", true);
+
+
+document.getElementById("search").addEventListener("input", e => { state.search = e.target.value; render(); });
+document.getElementById("sortSelect").addEventListener("change", e => { state.sort = e.target.value; render(); });
+document.getElementById("clearFilters").addEventListener("click", () => {
+  state.search = ""; state.category = "All"; state.bracket = "All"; state.sort = "default";
+  document.getElementById("search").value = "";
+  document.getElementById("sortSelect").value = "default";
+  render();
+});
+
+(async () => {
+  await loadCategories();
+  const wanted = new URLSearchParams(window.location.search).get("category");
+  if (wanted && CATEGORY_NAMES.includes(wanted)) state.category = wanted;
+  await loadListings();
+})();
+</script>
+
+</body>
+</html>
